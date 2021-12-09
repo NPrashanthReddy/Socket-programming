@@ -3,7 +3,7 @@ import socket
 import threading
 from tkinter import Message
 
-HOST = '127.0.0.1'#socket.gethostbyname(socket.gethostname())
+HOST = socket.gethostbyname(socket.gethostname())
 PORT = 9090
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((HOST, PORT))
