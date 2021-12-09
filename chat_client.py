@@ -6,13 +6,14 @@ import tkinter.scrolledtext
 from tkinter import simpledialog
 
 
-HOST = socket.gethostbyname(socket.gethostname())
+HOST ="192.168.1.5" # socket.gethostbyname(socket.gethostname())
 PORT = 9090
 
 class Client:
 
     def __init__(self, host, port) -> None:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print(host,port)
         self.sock.connect((host, port))
 
         msg = tkinter.Tk()
