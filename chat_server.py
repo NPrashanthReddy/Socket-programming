@@ -3,13 +3,13 @@ import socket
 import threading
 from tkinter import Message
 
-HOST = socket.gethostbyname(socket.gethostname())
+HOST = '127.0.0.1'#socket.gethostbyname(socket.gethostname())
 PORT = 9090
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((HOST, PORT))
 
 server.listen()
-
+print('The server is up and running: listening too...')
 clients = []
 usernames = []
 
@@ -22,7 +22,7 @@ def handle(client):
 		try: 
 			message = client.recv(1024).decode('utf-8')
 			print(f"{usernames[clients.index(client)]}: {message}")
-			broadcast(message)
+			broadcast(message.encode('utf-8'))
 
 		except:
 			index = clients.index(client)
@@ -37,8 +37,8 @@ def receive():
 		client, address = server.accept()
 		print(f"Connected with {str(address)}")
 
-		client.send("Username:".encode("utf-8"))
-		username = client.recv(1024) #1024 bytes
+		client.send("USERNAME".encode("utf-8"))
+		username = client.recv(1024).decode('utf-8') #1024 bytes
 
 		usernames.append(username)
 		clients.append(client)
