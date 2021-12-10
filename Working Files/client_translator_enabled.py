@@ -8,7 +8,7 @@ from tkinter import simpledialog
 
 
 HOST =socket.gethostbyname(socket.gethostname())
-PORT = 53565
+PORT = 9090
 translate = boto3.client(service_name='translate', region_name='ap-south-1', use_ssl=True)
 file = open("languages.txt", "r")
 lang_dict={}
