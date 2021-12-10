@@ -4,7 +4,7 @@ import threading
 
 
 HOST = socket.gethostbyname(socket.gethostname())
-PORT = 9090
+PORT = 9091
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print(HOST)
 server.bind(("", PORT))
@@ -14,6 +14,8 @@ print('The server is up and running: listening too...')
 clients = []
 usernames = []
 
+# def send_file(client, filename):
+# 	f"{username}/{filename}"
 def broadcast(message):
 	for client in clients:
 		client.send(message)

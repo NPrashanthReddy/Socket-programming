@@ -35,7 +35,7 @@ class Client:
         #The frontend is built here 
         self.win = tkinter.Tk()
         self.win.configure(bg="lightgray")
-
+        self.win.title("Babel Chat")
         #main window heading
         self.chat_label = tkinter.Label(self.win, text="Babel Chat \U0001F41F", bg='lightgray')
         self.chat_label.config(font=("Arial", 12))

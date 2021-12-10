@@ -8,7 +8,7 @@ from tkinter import simpledialog
 
 
 HOST ="172.24.159.136"
-PORT = 9090
+PORT = 9091
 translate = boto3.client(service_name='translate', region_name='ap-south-1', use_ssl=True)
 file = open("languages.txt", "r")
 lang_dict={}
@@ -24,15 +24,11 @@ class Client:
         self.sock.connect((host, port))
 
         msg = tkinter.Tk()
+        msg.withdraw() 
 
         self.username = simpledialog.askstring("Username", "Please choose a username", parent=msg)
-        # user_lang=simpledialog.askstring("Language", "Please choose a Language-code", parent=msg)
-        # user_lang=translate.translate_text(Text=user_lang, SourceLanguageCode="auto", TargetLanguageCode="en")
-        # user_lang=user_lang['TranslatedText']
-        # user_lang=user_lang.split(' ')
-        # user_lang=user_lang[0]
-        self.langauge = simpledialog.askstring("Language", "Please choose a Language-code", parent=msg)
-        msg.withdraw() 
+        user_lang=simpledialog.askstring("Language", "Please choose a Language", parent=msg)
+        self.langauge = lang_dict[user_lang]
         self.gui_done = False # tells that the gui is not yet built
         self.running = True # The server status
 
