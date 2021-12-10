@@ -2,11 +2,11 @@ import socket
 import threading
 import tkinter
 import tkinter.scrolledtext
-
+import sys
 from tkinter import simpledialog
 
 
-HOST ="192.168.1.5" # socket.gethostbyname(socket.gethostname())
+HOST = "172.24.159.136"
 PORT = 9090
 
 class Client:
@@ -73,7 +73,7 @@ class Client:
         self.running = False
         self.win.destroy()
         self.sock.close()
-        exit(0)
+        sys.exit()
 
     def receive(self):
         while self.running:

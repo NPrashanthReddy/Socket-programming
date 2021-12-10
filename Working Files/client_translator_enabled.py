@@ -7,7 +7,7 @@ import tkinter.scrolledtext
 from tkinter import simpledialog
 
 
-HOST =socket.gethostbyname(socket.gethostname())
+HOST ="172.24.159.136"
 PORT = 9090
 translate = boto3.client(service_name='translate', region_name='ap-south-1', use_ssl=True)
 file = open("languages.txt", "r")
@@ -24,7 +24,6 @@ class Client:
         self.sock.connect((host, port))
 
         msg = tkinter.Tk()
-        msg.withdraw() 
 
         self.username = simpledialog.askstring("Username", "Please choose a username", parent=msg)
         # user_lang=simpledialog.askstring("Language", "Please choose a Language-code", parent=msg)
@@ -33,6 +32,7 @@ class Client:
         # user_lang=user_lang.split(' ')
         # user_lang=user_lang[0]
         self.langauge = simpledialog.askstring("Language", "Please choose a Language-code", parent=msg)
+        msg.withdraw() 
         self.gui_done = False # tells that the gui is not yet built
         self.running = True # The server status
 
