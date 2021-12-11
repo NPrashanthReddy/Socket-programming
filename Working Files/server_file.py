@@ -4,11 +4,11 @@ import threading
 import os
 import tqdm
 
-BUFFER_SIZE = 4096
+BUFFER_SIZE = 1024*512 #1/2MB
 SEPARATOR = "<SEPARATOR>"
 
 HOST = socket.gethostbyname(socket.gethostname())
-PORT = 9091
+PORT = 9090
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print(HOST)
 server.bind(("", PORT))
@@ -24,6 +24,34 @@ def broadcast(message):
 	for client in clients:
 		client.send(message)
 
+def broadcast_file(send_client,filename,s_file):
+	for client in clients:
+		if client != send_client:
+			file_send(client,filename,s_file)
+	
+def sendall(client,data,flag=0):
+	sent=client.send(data,flag)
+	if sent>0:
+		return sendall(client,data[sent:],flag)
+	else:
+		return None
+
+
+def file_send(client, filename,s_file):
+	filesize = os.path.getsize(filename)
+	client.send(f">> {s_file}{SEPARATOR}{filesize}".encode("utf-8")) #
+	with open(filename,"rb") as f:
+		while True:
+			# read the bytes from the file
+			bytes_read = f.read(BUFFER_SIZE)
+			if not bytes_read:
+				# file transmitting is done
+				break
+			# we use sendall to assure transimission in 
+			# busy networks
+			sendall(client,bytes_read)
+			# update the progress bar
+
 def handle(client):
 	while True:
 		try: 
@@ -32,33 +60,36 @@ def handle(client):
 			if temp[:2]=='>>':
 				filename, filesize = temp.split(SEPARATOR)
 				print(filename,filesize)
-				filename_new="2"+filename[3:]
-				filename_new = os.path.basename(filename_new)
+
+				if not os.path.isdir('server'): os.makedirs('server') 
+				filename_new=filename[3:]
+				send_file=filename_new
+				filename_new = os.path.join("server",filename_new)
 				filesize=int(filesize)
-				res=""
 				
-				while True:
-					# read 1024 bytes from the socket (receive)
-					print('lol')
-					bytes_read = client.recv(BUFFER_SIZE)
-					# if not bytes_read:    
-					# 	# nothing is received
-					# 	# file transmitting is done
-					# 	break
-					
-					# write to the file the bytes we just received
-					#f.write(bytes_read)
-					#f.write(b'12345')						
-					# res=res+bytes_read.decode("utf-8")
-					# print(res,bytes_read,'lll')
-					f=open(filename_new, "wb")
+				bytes_read = client.recv(BUFFER_SIZE)
+				with open(filename_new, "wb") as f:
 					f.write(bytes_read)
-					f.close()
-					break
+				
+
+				broadcast_file(client,filename_new,send_file)
+				# read 1024 bytes from the socket (receive)
+				
+				# if not bytes_read:    
+				# 	# nothing is received
+				# 	# file transmitting is done
+				# 	break
+				
+				# write to the file the bytes we just received
+				#f.write(bytes_read)
+				#f.write(b'12345')						
+				# res=res+bytes_read.decode("utf-8")
+				# print(res,bytes_read,'lll')
 					# update the progress bar
 				# with open(filename_new,'w') as f:
 				
 			else:
+				# General text message
 				if len(message) < 1:
 					break
 				print(f"{message}") #logging the information
@@ -69,7 +100,6 @@ def handle(client):
 			index = clients.index(client)
 			clients.remove(client)
 			client.close()
-
 			usernames.pop(index)
 			break
 

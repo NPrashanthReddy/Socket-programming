@@ -5,23 +5,24 @@ import os
 import tqdm
 import threading
 import tkinter
+from tkinter.messagebox import askyesno
 import tkinter.scrolledtext
 
 from tkinter import simpledialog
 
 SEPARATOR="<SEPARATOR>"
-BUFFER_SIZE = 1024 * 4
+BUFFER_SIZE = 1024 * 512
 
 
-HOST =socket.gethostbyname(socket.gethostname())
-PORT = 9091
+HOST ="172.24.144.168" # Wsl IP address of Prashanth's PC
+PORT = 9090
 translate = boto3.client(service_name='translate', region_name='ap-south-1', use_ssl=True)
-file = open("languages.txt", "r")
 lang_dict={}
-for line in file:
-    parts=line[:-1].split('\t')
-    lang_dict[parts[0]]=parts[1]
 
+with open("languages.txt", "r") as file:
+    for line in file:
+        parts=line[:-1].split('\t')
+        lang_dict[parts[0]]=parts[1]
 
 
 class Client:
@@ -31,14 +32,15 @@ class Client:
         print(host,port)
         self.sock.connect((host, port))
 
+        #Creation of window
         msg = tkinter.Tk()
         msg.withdraw() 
 
-        self.username = "ngon"#simpledialog.askstring("Username", "Please choose a username", parent=msg)
+        self.username = simpledialog.askstring("Username", "Please choose a username", parent=msg)
         #user_lang=simpledialog.askstring("Language", "Please choose a Language", parent=msg)
         self.langauge ="en"  #lang_dict[user_lang]
         self.gui_done = False # tells that the gui is not yet built
-        self.running = True # The server status
+        self.running = True # The client status
 
         gui_thread = threading.Thread(target=self.gui_loop)
         receive_thread = threading.Thread(target=self.receive)
@@ -79,6 +81,7 @@ class Client:
 
 
     def sendall(self,data,flag=0):
+        """Ensures all the files have been transferred."""
         sent=self.sock.send(data,flag)
         if sent>0:
             return self.sendall(data[sent:],flag)
@@ -109,12 +112,13 @@ class Client:
         message = f"{self.username}: {self.input_area.get('1.0', 'end')}"
         str = self.input_area.get('1.0', 'end')
         if str[0:2] == '>>':
-            print('lol')
             self.filename=str[3:-1]
             self.file_send()
-            print("file has been sent")
-            fin=f"{self.username} has sent the file {self.filename}"
-            self.sock.send(fin.encode("utf-8"))
+            if self.gui_done: #makes sure our building of GUI is done
+                    self.text_area.config(state='normal')
+                    self.text_area.insert('end', f"{self.filename} has been sent") #append the message at the end
+                    self.text_area.yview('end') #scroll your view along with messages
+                    self.text_area.config(state='disabled')
         else:
             self.sock.send(message.encode("utf-8"))
 
@@ -133,6 +137,36 @@ class Client:
                 message = self.sock.recv(1024).decode('utf-8')
                 if message == "USERNAME":
                     self.sock.send(self.username.encode('utf-8'))
+                elif message[:2] == ">>":
+                    
+                    filename, filesize = message.split(SEPARATOR)
+                    accept_file=askyesno(title='Confirmation',
+                                         message=f'Do you wish to download the file {filename}?',
+                                         detail='Click yes to receive the file')
+                    if accept_file:
+                        print(filename,filesize)
+                        if not os.path.isdir(f'{self.username}'): os.makedirs(f'{self.username}')
+                        filename_new=filename[3:]
+                        print(filename)
+                        filename_new = os.path.join(f'{self.username}',filename_new)
+                        filesize=int(filesize)
+                        
+                        bytes_read = self.sock.recv(BUFFER_SIZE)
+
+                        with open(filename_new, "wb") as f:
+                            f.write(bytes_read)
+                        if self.gui_done: #makes sure our building of GUI is done
+                            self.text_area.config(state='normal')
+                            self.text_area.insert('end', f"{filename} has been received") #append the message at the end
+                            self.text_area.yview('end') #scroll your view along with messages
+                            self.text_area.config(state='disabled')
+                    else:
+                        if self.gui_done: #makes sure our building of GUI is done
+                            self.text_area.config(state='normal')
+                            self.text_area.insert('end', f"{filename} transfer has been rejected") #append the message at the end
+                            self.text_area.yview('end') #scroll your view along with messages
+                            self.text_area.config(state='disabled')
+
                 else: 
                     message = translate.translate_text(Text=message, SourceLanguageCode="auto", TargetLanguageCode=self.langauge)
                     message=message['TranslatedText']
