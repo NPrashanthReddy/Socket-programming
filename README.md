@@ -1,7 +1,7 @@
 # Socket-programming
 
 The folder contains the two required files server.py to run the server code and client.py to run the client code.
-We also added few test files such as a .gif, .png and a .txt so as to demonstrate the file transfer mechanism.
+We also added few test files such as a .gif, .jpg and a .txt so as to demonstrate the file transfer mechanism.
 
 ## Instructions
 - We have to dowload the server.py and client.py file to begin working with the project (the additional files can also be downloaded for checking)
